@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: trendhive-backend
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: DATABASE_URL
+        sync: false  # Set this to your Neon PostgreSQL Connection String in the Render dashboard
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        sync: false  # Set this to your Netlify Frontend URL (e.g. https://your-site.netlify.app)
