@@ -157,13 +157,13 @@ export default function ContentPage({ defaultView = 'kanban' }: { defaultView?: 
 
   return (
     <div className="max-w-[1600px] mx-auto h-[calc(100vh-4rem)] flex flex-col relative z-10 page-enter">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 lg:mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Content Hub</h1>
-          <p className="text-gray-400 mt-2 text-sm">Manage and schedule all your social media content.</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">Content Hub</h1>
+          <p className="text-gray-400 mt-1 lg:mt-2 text-sm">Manage and schedule all your social media content.</p>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <div className="glass-card p-1 flex rounded-xl">
             <button
               onClick={() => setView('kanban')}
@@ -179,16 +179,16 @@ export default function ContentPage({ defaultView = 'kanban' }: { defaultView?: 
             </button>
           </div>
           
-          <button className="glass-card text-gray-300 px-4 py-2.5 rounded-xl font-medium hover:text-white hover:bg-white/5 transition-colors flex items-center gap-2 text-sm">
+          <button className="glass-card text-gray-300 px-3 lg:px-4 py-2.5 rounded-xl font-medium hover:text-white hover:bg-white/5 transition-colors flex items-center gap-2 text-sm">
             <Filter className="w-4 h-4" />
-            Filter
+            <span className="hidden sm:inline">Filter</span>
           </button>
           <button
             onClick={() => setShowModal(true)}
-            className="glass-btn px-4 py-2.5 rounded-xl text-white font-medium flex items-center gap-2 text-sm shadow-sm"
+            className="glass-btn px-3 lg:px-4 py-2.5 rounded-xl text-white font-medium flex items-center gap-2 text-sm shadow-sm ml-auto sm:ml-0"
           >
             <Plus className="w-4 h-4" />
-            Create Post
+            <span className="hidden sm:inline">Create Post</span>
           </button>
         </div>
       </div>
@@ -198,16 +198,16 @@ export default function ContentPage({ defaultView = 'kanban' }: { defaultView?: 
           <div className="w-12 h-12 rounded-full border-4 border-white/10 border-t-primary animate-spin"></div>
         </div>
       ) : (
-        <div className="flex-1 overflow-x-auto pb-4 custom-scrollbar">
+        <div className="flex-1 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory lg:snap-none">
           {view === 'kanban' ? (
-            <div className="flex gap-5 h-full min-w-max">
+            <div className="flex gap-3 lg:gap-5 h-full min-w-max px-1">
               {STATUSES.map((status) => {
                 const columnPosts = posts.filter(p => p.status === status);
                 const isOver = dragOverColumn === status;
                 return (
                   <div
                     key={status}
-                    className={`w-[320px] rounded-2xl border flex flex-col transition-all duration-300 ${
+                    className={`w-[280px] sm:w-[300px] lg:w-[320px] snap-center rounded-2xl border flex flex-col transition-all duration-300 ${
                       isOver
                         ? 'bg-primary/10 border-primary/50 shadow-[0_0_30px_rgba(126,105,241,0.2)]'
                         : 'glass-dark border-white/5 hover:border-white/10'
@@ -287,8 +287,9 @@ export default function ContentPage({ defaultView = 'kanban' }: { defaultView?: 
               })}
             </div>
           ) : (
-            <div className="glass-card border border-white/5 rounded-2xl h-full p-6 flex flex-col">
-               <div className="grid grid-cols-7 gap-[1px] bg-white/5 border-l border-t border-white/5 flex-1 rounded-lg overflow-hidden">
+            <div className="glass-card border border-white/5 rounded-2xl h-full p-4 lg:p-6 flex flex-col">
+               {/* Desktop: 7-column grid calendar */}
+               <div className="hidden md:grid grid-cols-7 gap-[1px] bg-white/5 border-l border-t border-white/5 flex-1 rounded-lg overflow-hidden">
                  {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
                    <div key={d} className="glass p-2 text-center text-xs font-semibold text-gray-400">{d}</div>
                  ))}
@@ -310,6 +311,30 @@ export default function ContentPage({ defaultView = 'kanban' }: { defaultView?: 
                       </div>
                     );
                   })}
+               </div>
+               {/* Mobile: List view of scheduled posts */}
+               <div className="md:hidden flex-1 overflow-y-auto space-y-3">
+                 <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Scheduled Posts</h3>
+                 {posts.filter(p => p.scheduledTime).length === 0 ? (
+                   <div className="text-center py-12 border border-dashed border-white/10 rounded-xl">
+                     <p className="text-gray-500 text-sm">No scheduled posts yet.</p>
+                   </div>
+                 ) : (
+                   posts.filter(p => p.scheduledTime).sort((a, b) => new Date(a.scheduledTime!).getTime() - new Date(b.scheduledTime!).getTime()).map(p => (
+                     <div key={p.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
+                       <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                         <Calendar className="w-5 h-5 text-primary" />
+                       </div>
+                       <div className="flex-1 min-w-0">
+                         <h4 className="text-sm font-medium text-white truncate">{p.title}</h4>
+                         <p className="text-xs text-gray-400">
+                           {new Date(p.scheduledTime!).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                         </p>
+                       </div>
+                       <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-1 rounded font-medium border border-blue-500/20 flex-shrink-0">{p.platform}</span>
+                     </div>
+                   ))
+                 )}
                </div>
             </div>
           )}
@@ -371,7 +396,7 @@ export default function ContentPage({ defaultView = 'kanban' }: { defaultView?: 
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-1.5">Platform</label>
                     <select

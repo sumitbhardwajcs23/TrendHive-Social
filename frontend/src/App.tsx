@@ -187,15 +187,17 @@ function AppContent() {
         </>
       )}
 
+      {/* Mobile Header - Outside flex row so it spans full width */}
+      {isAuthenticated && !isClient && !isLanding && (
+        <MobileHeader onMenuClick={() => setSidebarOpen(true)} unreadCount={5} />
+      )}
+
       <div className="relative z-10 flex min-h-screen">
         {isAuthenticated && !isClient && !isLanding && (
-          <>
-            <MobileHeader onMenuClick={() => setSidebarOpen(true)} unreadCount={5} />
-            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-          </>
+          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         )}
 
-        <main className={`flex-1 ${isAuthenticated && !isClient && !isLanding ? 'lg:ml-[260px]' : ''} min-h-screen ${isLanding ? 'p-0' : 'p-4 lg:p-8'}`}>
+        <main className={`flex-1 ${isAuthenticated && !isClient && !isLanding ? 'lg:ml-[260px]' : ''} min-h-screen ${isLanding ? 'p-0' : 'px-3 py-4 sm:px-4 lg:p-8'}`}>
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<LandingPage />} />
