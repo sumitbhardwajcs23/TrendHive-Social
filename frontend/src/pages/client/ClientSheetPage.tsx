@@ -4,23 +4,11 @@ import { CheckCircle, ExternalLink, Link as LinkIcon, Edit2, Save, X } from 'luc
 import api from '../../api/client';
 import ClientChatWidget from '../../components/chat/ClientChatWidget';
 
-interface TrackerItem {
-  id: string;
-  reelId: string;
-  topicName: string;
-  rawLink: string;
-  driveLink: string;
-  type: string;
-  platform?: string;
-  status: string;
-  feedback: string;
-}
-
 export default function ClientSheetPage() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<{ feedback?: string }>({});
+  const [editForm, setEditForm] = useState<{ feedback?: string; rawLink?: string; driveLink?: string }>({});
   const [clientId, setClientId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -42,9 +30,9 @@ export default function ClientSheetPage() {
     }
   };
 
-  const startEditing = (item: TrackerItem) => {
+  const startEditing = (item: any) => {
     setEditingId(item.id);
-    setEditForm({ feedback: item.feedback || '' });
+    setEditForm({ feedback: item.feedback || '', rawLink: item.rawLink || '', driveLink: item.driveLink || '' });
   };
 
   const cancelEditing = () => {
@@ -135,12 +123,28 @@ export default function ClientSheetPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          {item.rawLink ? (
+                          {editingId === item.id ? (
+                            <input
+                              type="url"
+                              value={editForm.rawLink || ''}
+                              onChange={e => setEditForm({ ...editForm, rawLink: e.target.value })}
+                              placeholder="Raw link..."
+                              className="w-full text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          ) : item.rawLink ? (
                             <a href={item.rawLink} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline flex items-center gap-1 text-sm"><LinkIcon className="w-4 h-4"/> Link</a>
                           ) : <span className="text-gray-400 text-sm">Not provided</span>}
                         </td>
                         <td className="px-6 py-4">
-                          {item.driveLink ? (
+                          {editingId === item.id ? (
+                            <input
+                              type="url"
+                              value={editForm.driveLink || ''}
+                              onChange={e => setEditForm({ ...editForm, driveLink: e.target.value })}
+                              placeholder="Drive link..."
+                              className="w-full text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          ) : item.driveLink ? (
                             <a href={item.driveLink} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline flex items-center gap-1 text-sm"><ExternalLink className="w-4 h-4"/> Drive</a>
                           ) : <span className="text-gray-400 text-sm">Not provided</span>}
                         </td>
