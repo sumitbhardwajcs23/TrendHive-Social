@@ -35,7 +35,7 @@ interface NavItem {
 const mainNavItems: NavItem[] = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', roles: ['ADMIN', 'ACCOUNT_MANAGER', 'CREATOR', 'COPYWRITER', 'FREELANCER'] },
   { label: 'Content Hub', icon: FileText, path: '/content', roles: ['ADMIN', 'ACCOUNT_MANAGER', 'CREATOR', 'COPYWRITER', 'LEGAL_REVIEWER', 'FREELANCER'] },
-  { label: 'Production Tracker', icon: Table2, path: '/tracker', roles: ['ADMIN', 'ACCOUNT_MANAGER'] },
+  { label: 'Production Tracker', icon: Table2, path: '/tracker', roles: ['ADMIN', 'ACCOUNT_MANAGER', 'CREATOR', 'COPYWRITER', 'FREELANCER'] },
   { label: 'Global Inbox', icon: MessageSquare, path: '/inbox', badge: 5, roles: ['ADMIN', 'ACCOUNT_MANAGER', 'COMMUNITY_MANAGER'] },
   { label: 'Approvals', icon: CheckCircle, path: '/approvals', badge: 2, roles: ['ADMIN', 'ACCOUNT_MANAGER', 'CREATOR', 'COPYWRITER', 'LEGAL_REVIEWER', 'FREELANCER'] },
   { label: 'Media Library', icon: Image, path: '/media', roles: ['ADMIN', 'ACCOUNT_MANAGER', 'CREATOR', 'COPYWRITER', 'FREELANCER'] },
