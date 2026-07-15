@@ -13,6 +13,7 @@ import brandKitRoutes from './routes/brandKits.js';
 import teamRoutes from './routes/team.js';
 import analyticsRoutes from './routes/analytics.js';
 import settingsRoutes from './routes/settings.js';
+import trackerRoutes from './routes/tracker.js';
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use('/api/brandKits', brandKitRoutes);
 app.use('/api/team', teamRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/tracker', trackerRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', environment: process.env.NODE_ENV });

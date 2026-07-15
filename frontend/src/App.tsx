@@ -1,24 +1,28 @@
-import { useState } from 'react';
+import { useState, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Users, FileText, MessageSquare, Image, Calendar,
-  Settings, CheckCircle, BarChart3, Bell, Menu, LogOut
+  Settings, CheckCircle, BarChart3, Bell, Menu, LogOut, Table2
 } from 'lucide-react';
 import { useAuthStore } from './stores/authStore';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/auth/LoginPage';
-import DashboardPage from './pages/DashboardPage';
-import ContentPage from './pages/ContentPage';
-import InboxPage from './pages/InboxPage';
-import ApprovalsPage from './pages/ApprovalsPage';
-import MediaPage from './pages/MediaPage';
-import ClientsPage from './pages/ClientsPage';
-import TeamPage from './pages/TeamPage';
-import AnalyticsPage from './pages/AnalyticsPage';
-import SettingsPage from './pages/SettingsPage';
-import ClientDashboard from './pages/client/ClientDashboard';
+import { PageSkeleton } from './components/layout/PageSkeleton';
+
+// Lazy loaded pages
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const ContentPage = lazy(() => import('./pages/ContentPage'));
+const InboxPage = lazy(() => import('./pages/InboxPage'));
+const ApprovalsPage = lazy(() => import('./pages/ApprovalsPage'));
+const MediaPage = lazy(() => import('./pages/MediaPage'));
+const ClientsPage = lazy(() => import('./pages/ClientsPage'));
+const TeamPage = lazy(() => import('./pages/TeamPage'));
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const ClientDashboard = lazy(() => import('./pages/client/ClientDashboard'));
+const TrackerPage = lazy(() => import('./pages/TrackerPage'));
 
 interface NavItem {
   label: string;
@@ -31,6 +35,7 @@ interface NavItem {
 const mainNavItems: NavItem[] = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', roles: ['ADMIN', 'ACCOUNT_MANAGER', 'CREATOR', 'COPYWRITER', 'FREELANCER'] },
   { label: 'Content Hub', icon: FileText, path: '/content', roles: ['ADMIN', 'ACCOUNT_MANAGER', 'CREATOR', 'COPYWRITER', 'LEGAL_REVIEWER', 'FREELANCER'] },
+  { label: 'Production Tracker', icon: Table2, path: '/tracker', roles: ['ADMIN', 'ACCOUNT_MANAGER'] },
   { label: 'Global Inbox', icon: MessageSquare, path: '/inbox', badge: 5, roles: ['ADMIN', 'ACCOUNT_MANAGER', 'COMMUNITY_MANAGER'] },
   { label: 'Approvals', icon: CheckCircle, path: '/approvals', badge: 2, roles: ['ADMIN', 'ACCOUNT_MANAGER', 'CREATOR', 'COPYWRITER', 'LEGAL_REVIEWER', 'FREELANCER'] },
   { label: 'Media Library', icon: Image, path: '/media', roles: ['ADMIN', 'ACCOUNT_MANAGER', 'CREATOR', 'COPYWRITER', 'FREELANCER'] },
@@ -199,29 +204,32 @@ function AppContent() {
 
         <main className={`flex-1 ${isAuthenticated && !isClient && !isLanding ? 'lg:ml-[260px]' : ''} min-h-screen ${isLanding ? 'p-0' : 'px-3 py-4 sm:px-4 lg:p-8'}`}>
         <AnimatePresence mode="wait">
-          <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            
-            {/* Client Routes */}
-            <Route element={<ProtectedRoute allowedRoles={['CLIENT_STAKEHOLDER']} />}>
-              <Route path="/client" element={<ClientDashboard />} />
-            </Route>
+          <Suspense fallback={<PageSkeleton />}>
+            <Routes location={location} key={location.pathname}>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              
+              {/* Client Routes */}
+              <Route element={<ProtectedRoute allowedRoles={['CLIENT_STAKEHOLDER']} />}>
+                <Route path="/client" element={<ClientDashboard />} />
+              </Route>
 
-            {/* Admin/Agency Routes */}
-            <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'ACCOUNT_MANAGER', 'CREATOR', 'COPYWRITER', 'COMMUNITY_MANAGER', 'FREELANCER']} />}>
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/content" element={<ContentPage />} />
-              <Route path="/inbox" element={<InboxPage />} />
-              <Route path="/approvals" element={<ApprovalsPage />} />
-              <Route path="/media" element={<MediaPage />} />
-              <Route path="/calendar" element={<ContentPage defaultView="calendar" />} />
-              <Route path="/clients" element={<ClientsPage />} />
-              <Route path="/team" element={<TeamPage />} />
-              <Route path="/analytics" element={<AnalyticsPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-            </Route>
-          </Routes>
+              {/* Admin/Agency Routes */}
+              <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'ACCOUNT_MANAGER', 'CREATOR', 'COPYWRITER', 'COMMUNITY_MANAGER', 'FREELANCER']} />}>
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/content" element={<ContentPage />} />
+                <Route path="/inbox" element={<InboxPage />} />
+                <Route path="/approvals" element={<ApprovalsPage />} />
+                <Route path="/media" element={<MediaPage />} />
+                <Route path="/calendar" element={<ContentPage defaultView="calendar" />} />
+                <Route path="/clients" element={<ClientsPage />} />
+                <Route path="/tracker" element={<TrackerPage />} />
+                <Route path="/team" element={<TeamPage />} />
+                <Route path="/analytics" element={<AnalyticsPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+              </Route>
+            </Routes>
+          </Suspense>
         </AnimatePresence>
         </main>
       </div>
