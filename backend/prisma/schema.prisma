@@ -16,7 +16,7 @@ model Agency {
   id           String   @id @default(cuid())
   name         String
   logo         String?
-  brandColors  String?  // JSON string of colors
+  brandColors  String? // JSON string of colors
   customDomain String?
   planTier     String   @default("starter") // starter | pro | enterprise
   createdAt    DateTime @default(now())
@@ -27,46 +27,48 @@ model Agency {
 }
 
 model User {
-  id             String   @id @default(cuid())
-  email          String   @unique
-  password       String   // bcrypt hashed
-  name           String
-  avatar         String?
-  role           String   // ADMIN | ACCOUNT_MANAGER | CREATOR | COPYWRITER | LEGAL_REVIEWER | CLIENT_STAKEHOLDER | COMMUNITY_MANAGER | FREELANCER
-  status         String   @default("active") // active | inactive | away
-  agencyId       String
-  lastSeen       DateTime?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String // bcrypt hashed
+  name      String
+  avatar    String?
+  role      String // ADMIN | ACCOUNT_MANAGER | CREATOR | COPYWRITER | LEGAL_REVIEWER | CLIENT_STAKEHOLDER | COMMUNITY_MANAGER | FREELANCER
+  status    String    @default("active") // active | inactive | away
+  agencyId  String
+  lastSeen  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-  agency              Agency              @relation(fields: [agencyId], references: [id])
+  agency               Agency          @relation(fields: [agencyId], references: [id])
   workspaceAssignments WorkspaceUser[]
   posts                Post[]
   approvalDecisions    ApprovalStep[]
-  inboxLocks           InboxItem[]         @relation("LockedBy")
+  inboxLocks           InboxItem[]     @relation("LockedBy")
   timeEntries          TimeEntry[]
   auditLogs            AuditLog[]
   notifications        Notification[]
+  clientMessages       ClientMessage[]
 }
 
 model Client {
-  id           String   @id @default(cuid())
-  name         String
-  industry     String
-  logo         String?
-  retainerValue Float   @default(0)
-  industryTags String?  // JSON array of tags e.g. ["Healthcare", "Regulated"]
-  status       String   @default("active") // active | paused | churned
-  agencyId     String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String
+  industry      String
+  logo          String?
+  retainerValue Float    @default(0)
+  industryTags  String? // JSON array of tags e.g. ["Healthcare", "Regulated"]
+  status        String   @default("active") // active | paused | churned
+  agencyId      String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  agency     Agency      @relation(fields: [agencyId], references: [id])
-  workspace  Workspace?
-  brandKit   BrandKit?
+  agency          Agency           @relation(fields: [agencyId], references: [id])
+  workspace       Workspace?
+  brandKit        BrandKit?
   campaigns       Campaign[]
   inboxItems      InboxItem[]
   contentTrackers ContentTracker[]
+  clientMessages  ClientMessage[]
 }
 
 model Workspace {
@@ -75,10 +77,10 @@ model Workspace {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  client     Client          @relation(fields: [clientId], references: [id])
-  users      WorkspaceUser[]
-  assets     Asset[]
-  campaigns  Campaign[]
+  client      Client          @relation(fields: [clientId], references: [id])
+  users       WorkspaceUser[]
+  assets      Asset[]
+  campaigns   Campaign[]
   timeEntries TimeEntry[]
 }
 
@@ -95,16 +97,16 @@ model WorkspaceUser {
 }
 
 model Campaign {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
   description String?
   clientId    String
   workspaceId String
-  status      String   @default("active") // active | completed | paused
+  status      String    @default("active") // active | completed | paused
   startDate   DateTime?
   endDate     DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   client    Client    @relation(fields: [clientId], references: [id])
   workspace Workspace @relation(fields: [workspaceId], references: [id])
@@ -115,47 +117,47 @@ model Campaign {
 model Asset {
   id             String   @id @default(cuid())
   name           String
-  type           String   // image | video | audio | document
+  type           String // image | video | audio | document
   url            String?
   thumbnail      String?
   size           String?
-  tags           String?  // JSON array
+  tags           String? // JSON array
   source         String   @default("upload") // upload | canva | figma | adobe
-  versionHistory String?  // JSON array of prior version URLs
+  versionHistory String? // JSON array of prior version URLs
   workspaceId    String
   campaignId     String?
   uploadedBy     String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  workspace Workspace @relation(fields: [workspaceId], references: [id])
-  campaign  Campaign? @relation(fields: [campaignId], references: [id])
+  workspace Workspace   @relation(fields: [workspaceId], references: [id])
+  campaign  Campaign?   @relation(fields: [campaignId], references: [id])
   posts     PostAsset[]
 }
 
 model Post {
-  id                 String   @id @default(cuid())
-  title              String
-  content            String?
-  platformVariants   String?  // JSON: { instagram: {...}, tiktok: {...}, ... }
-  platform           String   // Instagram | TikTok | Facebook | LinkedIn | X
-  status             String   @default("draft") // draft | pending | approved | scheduled | published | failed
-  scheduledTime      DateTime?
-  publishedAt        DateTime?
-  contentType        String?  // reel | story | post | article | tweet
-  tags               String?  // JSON array
-  campaignId         String?
-  authorId           String
-  engagement         Float    @default(0)
-  likes              Int      @default(0)
-  comments           Int      @default(0)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id               String    @id @default(cuid())
+  title            String
+  content          String?
+  platformVariants String? // JSON: { instagram: {...}, tiktok: {...}, ... }
+  platform         String // Instagram | TikTok | Facebook | LinkedIn | X
+  status           String    @default("draft") // draft | pending | approved | scheduled | published | failed
+  scheduledTime    DateTime?
+  publishedAt      DateTime?
+  contentType      String? // reel | story | post | article | tweet
+  tags             String? // JSON array
+  campaignId       String?
+  authorId         String
+  engagement       Float     @default(0)
+  likes            Int       @default(0)
+  comments         Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  campaign       Campaign?      @relation(fields: [campaignId], references: [id])
-  author         User           @relation(fields: [authorId], references: [id])
-  assets         PostAsset[]
-  approvalSteps  ApprovalStep[]
+  campaign      Campaign?      @relation(fields: [campaignId], references: [id])
+  author        User           @relation(fields: [authorId], references: [id])
+  assets        PostAsset[]
+  approvalSteps ApprovalStep[]
 }
 
 model PostAsset {
@@ -173,8 +175,8 @@ model ApprovalStep {
   id              String    @id @default(cuid())
   postId          String
   stepOrder       Int
-  approverRole    String?   // Which role must approve
-  approverUserId  String?   // Specific user if assigned
+  approverRole    String? // Which role must approve
+  approverUserId  String? // Specific user if assigned
   status          String    @default("pending") // pending | approved | rejected
   decisionComment String?
   decidedAt       DateTime?
@@ -187,36 +189,36 @@ model ApprovalStep {
 }
 
 model InboxItem {
-  id            String   @id @default(cuid())
-  type          String   // comment | dm | mention | tag
-  platform      String   // Instagram | TikTok | Facebook | LinkedIn | X
-  content       String
-  author        String
-  authorAvatar  String?
-  sentiment     String   @default("neutral") // positive | neutral | negative | high_priority
-  priority      Int      @default(0)
-  status        String   @default("open") // open | resolved
+  id             String    @id @default(cuid())
+  type           String // comment | dm | mention | tag
+  platform       String // Instagram | TikTok | Facebook | LinkedIn | X
+  content        String
+  author         String
+  authorAvatar   String?
+  sentiment      String    @default("neutral") // positive | neutral | negative | high_priority
+  priority       Int       @default(0)
+  status         String    @default("open") // open | resolved
   suggestedReply String?
-  lockOwnerId   String?
-  lockExpiresAt DateTime?
-  clientId      String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  lockOwnerId    String?
+  lockExpiresAt  DateTime?
+  clientId       String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   client    Client @relation(fields: [clientId], references: [id])
   lockOwner User?  @relation("LockedBy", fields: [lockOwnerId], references: [id])
 }
 
 model BrandKit {
-  id                  String  @id @default(cuid())
-  clientId            String  @unique
-  hexColors           String? // JSON array of hex colors
-  typography          String?
-  logoAssets          String? // JSON array of logo URLs
-  toneOfVoiceProfile  String?
-  bannedTerms         String? // JSON array of banned words
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  clientId           String   @unique
+  hexColors          String? // JSON array of hex colors
+  typography         String?
+  logoAssets         String? // JSON array of logo URLs
+  toneOfVoiceProfile String?
+  bannedTerms        String? // JSON array of banned words
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   client Client @relation(fields: [clientId], references: [id])
 }
@@ -227,7 +229,7 @@ model TimeEntry {
   workspaceId String
   hours       Float
   date        DateTime
-  taskType    String?  // e.g. "Content Creation", "Community Management"
+  taskType    String? // e.g. "Content Creation", "Community Management"
   description String?
   createdAt   DateTime @default(now())
 
@@ -237,10 +239,10 @@ model TimeEntry {
 
 model AuditLog {
   id        String   @id @default(cuid())
-  action    String   // create | edit | approve | reject | publish | delete | login
-  entity    String   // Post | Asset | Client | User | ApprovalStep | etc
+  action    String // create | edit | approve | reject | publish | delete | login
+  entity    String // Post | Asset | Client | User | ApprovalStep | etc
   entityId  String
-  details   String?  // JSON details
+  details   String? // JSON details
   userId    String
   createdAt DateTime @default(now())
 
@@ -250,7 +252,7 @@ model AuditLog {
 model Notification {
   id        String   @id @default(cuid())
   userId    String
-  type      String   // comment | approval | status_change | file_attach | escalation | reminder
+  type      String // comment | approval | status_change | file_attach | escalation | reminder
   title     String
   message   String
   read      Boolean  @default(false)
@@ -261,21 +263,33 @@ model Notification {
 }
 
 model ContentTracker {
-  id              String   @id @default(cuid())
-  reelId          String?
-  topicName       String
-  rawLink         String?
-  driveLink       String?
-  type            String?
-  editor          String?
-  hashtag         String?
-  feedback        String?
-  status          String   @default("pending") // e.g., pending, in_progress, ready, posted
-  views           Int      @default(0)
-  platformLinks   String?  // JSON array of strings e.g., ["https://instagram.com/...", "https://tiktok.com/..."]
-  clientId        String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id            String   @id @default(cuid())
+  reelId        String?
+  topicName     String
+  rawLink       String?
+  driveLink     String?
+  type          String?
+  editor        String?
+  hashtag       String?
+  feedback      String?
+  status        String   @default("pending") // e.g., pending, in_progress, ready, posted
+  views         Int      @default(0)
+  platform      String? // The specific platform/account (e.g., "YouTube - Main Channel")
+  platformLinks String? // JSON array of strings e.g., ["https://instagram.com/...", "https://tiktok.com/..."]
+  clientId      String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  client          Client   @relation(fields: [clientId], references: [id])
+  client Client @relation(fields: [clientId], references: [id])
+}
+
+model ClientMessage {
+  id        String   @id @default(cuid())
+  content   String
+  senderId  String
+  clientId  String
+  createdAt DateTime @default(now())
+
+  sender User   @relation(fields: [senderId], references: [id])
+  client Client @relation(fields: [clientId], references: [id])
 }

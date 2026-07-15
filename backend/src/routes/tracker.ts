@@ -22,15 +22,14 @@ router.get('/', authenticate, async (req: any, res: any) => {
     }
 
     if (allowedClientIds.length === 0) {
-      return res.json({ trackerItems: [] });
+      return res.json({ trackerItems: [], clientId: null });
     }
 
     const items = await prisma.contentTracker.findMany({
       where: { clientId: { in: allowedClientIds } },
       orderBy: { createdAt: 'desc' }
     });
-    
-    res.json({ trackerItems: items });
+    res.json({ trackerItems: items, clientId: allowedClientIds[0] });
   } catch (error) {
     console.error('Fetch own tracker items error:', error);
     res.status(500).json({ error: 'Server error' });
@@ -71,7 +70,7 @@ router.get('/:clientId', authenticate, async (req: any, res: any) => {
 // Create a tracker item
 router.post('/', authenticate, async (req: any, res: any) => {
   try {
-    const { reelId, topicName, rawLink, driveLink, type, editor, hashtag, feedback, status, views, platformLinks, clientId } = req.body;
+    const { reelId, topicName, rawLink, driveLink, type, editor, hashtag, feedback, status, views, platform, platformLinks, clientId } = req.body;
     
     // Block clients from creating rows
     if (req.user.role === 'CLIENT_STAKEHOLDER') {
@@ -90,6 +89,7 @@ router.post('/', authenticate, async (req: any, res: any) => {
         hashtag,
         feedback,
         status,
+        platform,
         views: views ? parseInt(views.toString()) : 0,
         platformLinks: platformLinks ? JSON.stringify(platformLinks) : null,
       }
@@ -106,7 +106,7 @@ router.post('/', authenticate, async (req: any, res: any) => {
 router.put('/:id', authenticate, async (req: any, res: any) => {
   try {
     const { id } = req.params;
-    const { reelId, topicName, rawLink, driveLink, type, editor, hashtag, feedback, status, views, platformLinks } = req.body;
+    const { reelId, topicName, rawLink, driveLink, type, editor, hashtag, feedback, status, views, platform, platformLinks } = req.body;
     
     // Find the item to check permissions
     const existing = await prisma.contentTracker.findUnique({ where: { id } });
@@ -144,6 +144,7 @@ router.put('/:id', authenticate, async (req: any, res: any) => {
         hashtag,
         feedback,
         status,
+        platform,
         views: views !== undefined ? parseInt(views.toString()) : undefined,
         platformLinks: platformLinks !== undefined ? JSON.stringify(platformLinks) : undefined,
       }

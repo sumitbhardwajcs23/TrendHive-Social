@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, ExternalLink, Save, X, Edit2, Link as LinkIcon, Trash2 } from 'lucide-react';
 import api from '../api/client';
+import ClientChatWidget from '../components/chat/ClientChatWidget';
 
 interface Client {
   id: string;
@@ -19,6 +20,7 @@ interface TrackerItem {
   feedback: string;
   status: string;
   views: number;
+  platform?: string;
   platformLinks: string; // Stored as JSON string in DB, but we can treat as string for now or parse it
 }
 
@@ -180,6 +182,7 @@ export default function TrackerPage() {
                   <th className="p-3 font-medium text-gray-400 w-12 border-b border-white/10">Actions</th>
                   <th className="p-3 font-medium text-gray-400 w-24 border-b border-white/10">Reel ID</th>
                   <th className="p-3 font-medium text-gray-400 w-48 border-b border-white/10">Topic Name</th>
+                  <th className="p-3 font-medium text-gray-400 w-32 border-b border-white/10">Platform</th>
                   <th className="p-3 font-medium text-gray-400 w-32 border-b border-white/10">Type</th>
                   <th className="p-3 font-medium text-gray-400 w-32 border-b border-white/10">Status</th>
                   <th className="p-3 font-medium text-gray-400 w-32 border-b border-white/10">Raw Link</th>
@@ -193,7 +196,7 @@ export default function TrackerPage() {
               <tbody className="divide-y divide-white/5">
                 {filteredItems.length === 0 ? (
                   <tr>
-                    <td colSpan={11} className="p-8 text-center text-gray-500">
+                    <td colSpan={12} className="p-8 text-center text-gray-500">
                       No tracking rows found for this client.
                     </td>
                   </tr>
@@ -228,6 +231,13 @@ export default function TrackerPage() {
                           {isEditing ? (
                             <input type="text" value={editForm.topicName || ''} onChange={e => setEditForm({...editForm, topicName: e.target.value})} className="w-full bg-black/30 border border-white/10 rounded px-2 py-1 text-white focus:outline-none focus:border-primary" />
                           ) : <span className="text-white font-medium">{item.topicName}</span>}
+                        </td>
+
+                        {/* Platform */}
+                        <td className="p-3">
+                          {isEditing ? (
+                            <input type="text" value={editForm.platform || ''} onChange={e => setEditForm({...editForm, platform: e.target.value})} className="w-full bg-black/30 border border-white/10 rounded px-2 py-1 text-white focus:outline-none focus:border-primary" placeholder="e.g. YouTube" />
+                          ) : <span className="text-gray-300">{item.platform || '-'}</span>}
                         </td>
 
                         {/* Type */}
@@ -318,6 +328,8 @@ export default function TrackerPage() {
           </div>
         )}
       </div>
+
+      {selectedClientId && <ClientChatWidget clientId={selectedClientId} />}
     </div>
   );
 }

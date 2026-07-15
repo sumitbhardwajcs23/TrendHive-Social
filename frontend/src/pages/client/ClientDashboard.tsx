@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useAuthStore } from '../../stores/authStore';
 import { LogOut, CheckCircle, ExternalLink, Link as LinkIcon, Edit2, Save, X } from 'lucide-react';
 import api from '../../api/client';
+import ClientChatWidget from '../../components/chat/ClientChatWidget';
 
 interface TrackerItem {
   id: string;
@@ -11,6 +12,7 @@ interface TrackerItem {
   rawLink: string;
   driveLink: string;
   type: string;
+  platform?: string;
   status: string;
   feedback: string;
 }
@@ -21,6 +23,7 @@ export default function ClientDashboard() {
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<{ feedback?: string }>({});
+  const [clientId, setClientId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchTrackerItems();
@@ -31,6 +34,9 @@ export default function ClientDashboard() {
     try {
       const res = await api.get(`/tracker`);
       setItems(res.data.trackerItems || []);
+      if (res.data.clientId) {
+        setClientId(res.data.clientId);
+      }
     } catch (error) {
       console.error('Failed to fetch tracker items', error);
     } finally {
@@ -112,6 +118,7 @@ export default function ClientDashboard() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reel / Topic</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Platform</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Raw Link</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Drive Link</th>
@@ -125,6 +132,9 @@ export default function ClientDashboard() {
                         <td className="px-6 py-4">
                           <div className="font-medium text-gray-900">{item.topicName}</div>
                           {item.type && <div className="text-xs text-gray-500">{item.type} {item.reelId ? `• ${item.reelId}` : ''}</div>}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          {item.platform || '-'}
                         </td>
                         <td className="px-6 py-4">
                           <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -179,6 +189,8 @@ export default function ClientDashboard() {
           </div>
         </motion.div>
       </main>
+
+      {clientId && <ClientChatWidget clientId={clientId} />}
     </div>
   );
 }
