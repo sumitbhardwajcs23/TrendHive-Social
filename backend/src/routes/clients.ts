@@ -70,7 +70,7 @@ router.post('/', requireRole(['ADMIN', 'ACCOUNT_MANAGER']), async (req, res) => 
 // Get single client details
 router.get('/:id', async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const user = req.user!;
 
     const client = await prisma.client.findFirst({
@@ -98,7 +98,7 @@ router.get('/:id', async (req, res) => {
 // Update a client (Admin & Account Manager only)
 router.put('/:id', requireRole(['ADMIN', 'ACCOUNT_MANAGER']), async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { name, industry, retainerValue, industryTags } = req.body;
     const user = req.user!;
 

@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 // Get messages for a specific client
 router.get('/:clientId', authenticate, async (req, res) => {
   try {
-    const { clientId } = req.params;
+    const clientId = req.params.clientId as string;
 
     const messages = await prisma.clientMessage.findMany({
       where: { clientId },
@@ -35,7 +35,7 @@ router.get('/:clientId', authenticate, async (req, res) => {
 // Send a message
 router.post('/:clientId', authenticate, async (req, res) => {
   try {
-    const { clientId } = req.params;
+    const clientId = req.params.clientId as string;
     const { content } = req.body;
     const user = (req as any).user;
 

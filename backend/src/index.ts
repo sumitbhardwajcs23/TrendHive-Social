@@ -15,6 +15,7 @@ import analyticsRoutes from './routes/analytics.js';
 import settingsRoutes from './routes/settings.js';
 import trackerRoutes from './routes/tracker.js';
 import messagesRoutes from './routes/messages.js';
+import workspaceRoutes from './routes/workspaces.js';
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/tracker', trackerRoutes);
 app.use('/api/messages', messagesRoutes);
+app.use('/api/workspaces', workspaceRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', environment: process.env.NODE_ENV });
