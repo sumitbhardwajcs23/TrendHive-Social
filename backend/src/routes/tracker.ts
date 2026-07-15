@@ -126,7 +126,9 @@ router.put('/:id', authenticate, async (req: any, res: any) => {
       const clientUpdate = await prisma.contentTracker.update({
         where: { id },
         data: {
-          feedback: feedback !== undefined ? feedback : existing.feedback
+          feedback: feedback !== undefined ? feedback : existing.feedback,
+          rawLink: rawLink !== undefined ? rawLink : existing.rawLink,
+          driveLink: driveLink !== undefined ? driveLink : existing.driveLink
         }
       });
       return res.json({ trackerItem: clientUpdate });

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useAuthStore } from '../../stores/authStore';
-import { LogOut, CheckCircle, ExternalLink, Link as LinkIcon, Edit2, Save, X } from 'lucide-react';
+import { CheckCircle, ExternalLink, Link as LinkIcon, Edit2, Save, X } from 'lucide-react';
 import api from '../../api/client';
 import ClientChatWidget from '../../components/chat/ClientChatWidget';
 
@@ -17,9 +16,8 @@ interface TrackerItem {
   feedback: string;
 }
 
-export default function ClientDashboard() {
-  const { user, logout } = useAuthStore();
-  const [items, setItems] = useState<TrackerItem[]>([]);
+export default function ClientSheetPage() {
+  const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<{ feedback?: string }>({});
@@ -70,16 +68,7 @@ export default function ClientDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">Client Portal</h1>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-500">Welcome, {user?.name}</span>
-              <button
-                onClick={() => logout()}
-                className="p-2 text-gray-400 hover:text-gray-500"
-              >
-                <LogOut className="w-5 h-5" />
-              </button>
+              <h1 className="text-xl font-bold text-gray-900">Production Tracker</h1>
             </div>
           </div>
         </div>

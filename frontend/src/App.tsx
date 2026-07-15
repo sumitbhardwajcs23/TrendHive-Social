@@ -21,7 +21,9 @@ const ClientsPage = lazy(() => import('./pages/ClientsPage'));
 const TeamPage = lazy(() => import('./pages/TeamPage'));
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
-const ClientDashboard = lazy(() => import('./pages/client/ClientDashboard'));
+const ClientSheetPage = lazy(() => import('./pages/client/ClientSheetPage'));
+const ClientProfilePage = lazy(() => import('./pages/client/ClientProfilePage'));
+const ClientRawClipsPage = lazy(() => import('./pages/client/ClientRawClipsPage'));
 const TrackerPage = lazy(() => import('./pages/TrackerPage'));
 
 interface NavItem {
@@ -48,6 +50,87 @@ const mainNavItems: NavItem[] = [
 const bottomNavItems: NavItem[] = [
   { label: 'Settings', icon: Settings, path: '/settings', roles: ['ADMIN'] },
 ];
+
+const clientNavItems: NavItem[] = [
+  { label: 'Production Tracker', icon: Table2, path: '/client/sheet', roles: ['CLIENT_STAKEHOLDER'] },
+  { label: 'Raw Clips', icon: Image, path: '/client/raw-clips', roles: ['CLIENT_STAKEHOLDER'] },
+  { label: 'Profile', icon: Users, path: '/client/profile', roles: ['CLIENT_STAKEHOLDER'] },
+];
+
+function ClientSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const location = useLocation();
+  const { user, logout } = useAuthStore();
+
+  if (!user || user.role !== 'CLIENT_STAKEHOLDER') return null;
+
+  return (
+    <>
+      {isOpen && (
+        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={onClose} />
+      )}
+
+      <aside className={`fixed left-0 top-0 h-full w-[260px] glass-dark border-r border-white/5 z-50 flex flex-col transition-transform duration-300 ease-out
+          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        <div className="p-5 pb-3">
+          <Link to="/client/sheet" className="block">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                <div className="w-4 h-4 rounded bg-primary animate-pulse-glow" />
+              </div>
+              <h1 className="text-white font-bold text-lg tracking-wide">Client Portal</h1>
+            </div>
+          </Link>
+          <p className="text-gray-400 text-xs mt-2 pl-10">TrendHive Social</p>
+        </div>
+
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          {clientNavItems.map((item) => {
+            const isActive = location.pathname.startsWith(item.path);
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => onClose()}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group relative
+                  ${isActive ? 'bg-[#1A1A1A] text-white' : 'text-gray-400 hover:text-white hover:bg-[#1A1A1A]/50'}`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="clientActiveIndicator"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-5 bg-[#6056D3] rounded-r-full"
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  />
+                )}
+                <item.icon className="w-[18px] h-[18px]" />
+                <span className="flex-1">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="px-3 py-4 border-t border-gray-800 space-y-1">
+          <button
+            onClick={() => logout()}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-[#1A1A1A]/50 transition-all duration-200"
+          >
+            <LogOut className="w-[18px] h-[18px]" />
+            <span>Sign Out</span>
+          </button>
+
+          <div className="mt-3 pt-3 border-t border-gray-800 flex items-center gap-3 px-3">
+            <div className="w-8 h-8 rounded-full bg-[#6056D3] flex items-center justify-center text-white text-xs font-bold">
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white text-sm font-medium truncate">{user.name}</p>
+              <p className="text-gray-500 text-xs truncate">Client</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </>
+  );
+}
 
 function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const location = useLocation();
@@ -193,16 +276,20 @@ function AppContent() {
       )}
 
       {/* Mobile Header - Outside flex row so it spans full width */}
-      {isAuthenticated && !isClient && !isLanding && (
-        <MobileHeader onMenuClick={() => setSidebarOpen(true)} unreadCount={5} />
+      {isAuthenticated && !isLanding && (
+        <MobileHeader onMenuClick={() => setSidebarOpen(true)} unreadCount={isClient ? 0 : 5} />
       )}
 
       <div className="relative z-10 flex min-h-screen">
-        {isAuthenticated && !isClient && !isLanding && (
-          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        {isAuthenticated && !isLanding && (
+          isClient ? (
+            <ClientSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+          ) : (
+            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+          )
         )}
 
-        <main className={`flex-1 ${isAuthenticated && !isClient && !isLanding ? 'lg:ml-[260px]' : ''} min-h-screen ${isLanding ? 'p-0' : 'px-3 py-4 sm:px-4 lg:p-8'}`}>
+        <main className={`flex-1 ${isAuthenticated && !isLanding ? 'lg:ml-[260px]' : ''} min-h-screen ${isLanding ? 'p-0' : 'px-3 py-4 sm:px-4 lg:p-8'}`}>
         <AnimatePresence mode="wait">
           <Suspense fallback={<PageSkeleton />}>
             <Routes location={location} key={location.pathname}>
@@ -211,7 +298,10 @@ function AppContent() {
               
               {/* Client Routes */}
               <Route element={<ProtectedRoute allowedRoles={['CLIENT_STAKEHOLDER']} />}>
-                <Route path="/client" element={<ClientDashboard />} />
+                <Route path="/client" element={<ClientSheetPage />} />
+                <Route path="/client/sheet" element={<ClientSheetPage />} />
+                <Route path="/client/profile" element={<ClientProfilePage />} />
+                <Route path="/client/raw-clips" element={<ClientRawClipsPage />} />
               </Route>
 
               {/* Admin/Agency Routes */}
