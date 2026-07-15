@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, Building2, Tag, DollarSign, FolderOpen, X } from 'lucide-react';
+import { Plus, Search, Building2, Tag, IndianRupee, FolderOpen, X, Edit2 } from 'lucide-react';
 import api from '../api/client';
 import { useAuthStore } from '../stores/authStore';
 
@@ -19,6 +19,7 @@ export default function ClientsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [editingClientId, setEditingClientId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: '', industry: '', retainerValue: '', tags: '' });
   const [formError, setFormError] = useState('');
   const { user } = useAuthStore();
@@ -39,7 +40,25 @@ export default function ClientsPage() {
     }
   };
 
-  const handleCreateClient = async (e: React.FormEvent) => {
+  const openCreateModal = () => {
+    setEditingClientId(null);
+    setFormData({ name: '', industry: '', retainerValue: '', tags: '' });
+    setShowModal(true);
+  };
+
+  const openEditModal = (client: Client, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingClientId(client.id);
+    setFormData({
+      name: client.name,
+      industry: client.industry || '',
+      retainerValue: client.retainerValue?.toString() || '',
+      tags: client.industryTags ? JSON.parse(client.industryTags).join(', ') : ''
+    });
+    setShowModal(true);
+  };
+
+  const handleSubmitClient = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
       setFormError('Client name is required');
@@ -53,17 +72,25 @@ export default function ClientsPage() {
         .map(t => t.trim())
         .filter(Boolean);
 
-      await api.post('/clients', {
+      const payload = {
         name: formData.name.trim(),
         industry: formData.industry.trim(),
         retainerValue: formData.retainerValue || '0',
         industryTags: tags,
-      });
+      };
+
+      if (editingClientId) {
+        await api.put(`/clients/${editingClientId}`, payload);
+      } else {
+        await api.post('/clients', payload);
+      }
+      
       setShowModal(false);
       setFormData({ name: '', industry: '', retainerValue: '', tags: '' });
+      setEditingClientId(null);
       fetchClients();
     } catch (error: any) {
-      setFormError(error.response?.data?.error || 'Failed to create client');
+      setFormError(error.response?.data?.error || `Failed to ${editingClientId ? 'update' : 'create'} client`);
     } finally {
       setCreating(false);
     }
@@ -84,7 +111,7 @@ export default function ClientsPage() {
         
         {isAdmin && (
           <button
-            onClick={() => setShowModal(true)}
+            onClick={openCreateModal}
             className="glass-btn px-4 py-2.5 rounded-xl text-white font-medium flex items-center gap-2 shadow-sm"
           >
             <Plus className="w-4 h-4" />
@@ -121,7 +148,7 @@ export default function ClientsPage() {
           </p>
           {!searchQuery && isAdmin && (
             <button
-              onClick={() => setShowModal(true)}
+              onClick={openCreateModal}
               className="mt-6 glass-btn px-5 py-2.5 rounded-xl text-white font-medium inline-flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
@@ -148,12 +175,20 @@ export default function ClientsPage() {
                     {client.name.substring(0, 2).toUpperCase()}
                   </div>
                   {isAdmin && (
-                    <div className="text-right">
-                      <p className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider mb-1">Retainer</p>
-                      <p className="font-bold text-white tabular-nums flex items-center justify-end">
-                        <DollarSign className="w-4 h-4 text-emerald-400 mr-0.5" />
-                        {client.retainerValue.toLocaleString()}
-                      </p>
+                    <div className="flex items-start gap-4">
+                      <div className="text-right">
+                        <p className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider mb-1">Retainer</p>
+                        <p className="font-bold text-white tabular-nums flex items-center justify-end">
+                          <IndianRupee className="w-4 h-4 text-emerald-400 mr-0.5" />
+                          {client.retainerValue.toLocaleString('en-IN')}
+                        </p>
+                      </div>
+                      <button 
+                        onClick={(e) => openEditModal(client, e)}
+                        className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
                     </div>
                   )}
                 </div>
@@ -215,13 +250,13 @@ export default function ClientsPage() {
               <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
               
               <div className="flex justify-between items-center p-6 border-b border-white/5">
-                <h2 className="text-xl font-bold text-white">Add New Client</h2>
+                <h2 className="text-xl font-bold text-white">{editingClientId ? 'Edit Client' : 'Add New Client'}</h2>
                 <button onClick={() => setShowModal(false)} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
                   <X className="w-5 h-5 text-gray-400" />
                 </button>
               </div>
 
-              <form onSubmit={handleCreateClient} className="p-6 space-y-5">
+              <form onSubmit={handleSubmitClient} className="p-6 space-y-5">
                 {formError && (
                   <div className="bg-destructive/10 border border-destructive/20 text-destructive-foreground px-4 py-3 rounded-xl text-sm">
                     {formError}
@@ -252,43 +287,47 @@ export default function ClientsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Monthly Retainer ($)</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Monthly Retainer (₹)</label>
                   <input
                     type="number"
                     min="0"
                     step="100"
                     value={formData.retainerValue}
                     onChange={(e) => setFormData(prev => ({ ...prev, retainerValue: e.target.value }))}
-                    placeholder="e.g. 5000"
+                    placeholder="e.g. 50000"
                     className="w-full px-4 py-3 glass-input rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Tags (comma-separated)</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Industry Tags (comma separated)</label>
                   <input
                     type="text"
                     value={formData.tags}
                     onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
-                    placeholder="e.g. B2B, SaaS, Enterprise"
+                    placeholder="e.g. SaaS, B2B, Tech"
                     className="w-full px-4 py-3 glass-input rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                   />
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+                <div className="pt-4 flex gap-3">
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
-                    className="px-5 py-2.5 text-gray-400 font-medium hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+                    className="flex-1 px-4 py-3 rounded-xl font-medium text-gray-300 bg-white/5 hover:bg-white/10 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={creating}
-                    className="glass-btn px-6 py-2.5 text-white font-medium rounded-xl disabled:opacity-50"
+                    className="flex-1 glass-btn px-4 py-3 rounded-xl font-medium text-white shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    {creating ? 'Adding...' : 'Add Client'}
+                    {creating ? (
+                      <div className="w-5 h-5 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+                    ) : (
+                      editingClientId ? 'Save Changes' : 'Create Client'
+                    )}
                   </button>
                 </div>
               </form>

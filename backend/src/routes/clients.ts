@@ -95,4 +95,48 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// Update a client (Admin & Account Manager only)
+router.put('/:id', requireRole(['ADMIN', 'ACCOUNT_MANAGER']), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, industry, retainerValue, industryTags } = req.body;
+    const user = req.user!;
+
+    // Ensure the client belongs to the user's agency
+    const existing = await prisma.client.findFirst({
+      where: { id, agencyId: user.agencyId }
+    });
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Client not found' });
+    }
+
+    let parsedTags = null;
+    if (industryTags) {
+      // If it's already an array, just stringify it. If it's a comma-separated string, parse it.
+      if (Array.isArray(industryTags)) {
+        parsedTags = JSON.stringify(industryTags);
+      } else {
+        parsedTags = JSON.stringify(industryTags.split(',').map((t: string) => t.trim()).filter(Boolean));
+      }
+    }
+
+    const client = await prisma.client.update({
+      where: { id },
+      data: {
+        name: name !== undefined ? name.trim() : existing.name,
+        industry: industry !== undefined ? industry.trim() : existing.industry,
+        retainerValue: retainerValue !== undefined ? parseFloat(retainerValue) : existing.retainerValue,
+        industryTags: parsedTags !== null ? parsedTags : existing.industryTags,
+      },
+      include: { workspace: true }
+    });
+
+    res.json({ client });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;

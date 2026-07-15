@@ -112,9 +112,24 @@ router.put('/:id', authenticate, async (req: any, res: any) => {
     const existing = await prisma.contentTracker.findUnique({ where: { id } });
     if (!existing) return res.status(404).json({ error: 'Not found' });
 
-    // Block clients from editing rows
+    // Handle client updates (only feedback allowed)
     if (req.user.role === 'CLIENT_STAKEHOLDER') {
-      return res.status(403).json({ error: 'Clients cannot edit tracker rows' });
+      const userWorkspaces = await prisma.workspaceUser.findMany({
+        where: { userId: req.user.id },
+        include: { workspace: true }
+      });
+      const allowedClientIds = userWorkspaces.map(uw => uw.workspace.clientId);
+      if (!allowedClientIds.includes(existing.clientId)) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      const clientUpdate = await prisma.contentTracker.update({
+        where: { id },
+        data: {
+          feedback: feedback !== undefined ? feedback : existing.feedback
+        }
+      });
+      return res.json({ trackerItem: clientUpdate });
     }
 
     const item = await prisma.contentTracker.update({

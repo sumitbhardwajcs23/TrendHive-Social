@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../stores/authStore';
-import { LogOut, CheckCircle, ExternalLink, Link as LinkIcon } from 'lucide-react';
+import { LogOut, CheckCircle, ExternalLink, Link as LinkIcon, Edit2, Save, X } from 'lucide-react';
 import api from '../../api/client';
 
 interface TrackerItem {
@@ -19,6 +19,8 @@ export default function ClientDashboard() {
   const { user, logout } = useAuthStore();
   const [items, setItems] = useState<TrackerItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<{ feedback?: string }>({});
 
   useEffect(() => {
     fetchTrackerItems();
@@ -33,6 +35,26 @@ export default function ClientDashboard() {
       console.error('Failed to fetch tracker items', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const startEditing = (item: TrackerItem) => {
+    setEditingId(item.id);
+    setEditForm({ feedback: item.feedback || '' });
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditForm({});
+  };
+
+  const saveEdit = async (id: string) => {
+    try {
+      const res = await api.put(`/tracker/${id}`, { feedback: editForm.feedback });
+      setItems(items.map(item => item.id === id ? res.data.trackerItem : item));
+      setEditingId(null);
+    } catch (error) {
+      console.error('Failed to update feedback', error);
     }
   };
 
@@ -93,6 +115,7 @@ export default function ClientDashboard() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Raw Link</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Drive Link</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Feedback</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -121,6 +144,31 @@ export default function ClientDashboard() {
                           {item.driveLink ? (
                             <a href={item.driveLink} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline flex items-center gap-1 text-sm"><ExternalLink className="w-4 h-4"/> Drive</a>
                           ) : <span className="text-gray-400 text-sm">Not provided</span>}
+                        </td>
+                        <td className="px-6 py-4">
+                          {editingId === item.id ? (
+                            <div className="flex items-start gap-2">
+                              <textarea
+                                value={editForm.feedback || ''}
+                                onChange={e => setEditForm({ ...editForm, feedback: e.target.value })}
+                                placeholder="Add your feedback..."
+                                className="w-full text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 min-h-[60px]"
+                              />
+                              <div className="flex flex-col gap-1">
+                                <button onClick={() => saveEdit(item.id)} className="p-1 text-green-600 hover:bg-green-50 rounded"><Save className="w-4 h-4"/></button>
+                                <button onClick={cancelEditing} className="p-1 text-gray-400 hover:bg-gray-50 rounded"><X className="w-4 h-4"/></button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-start justify-between group">
+                              <p className="text-sm text-gray-600 max-w-[200px] truncate pr-4">
+                                {item.feedback || <span className="text-gray-400 italic">No feedback</span>}
+                              </p>
+                              <button onClick={() => startEditing(item)} className="text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Edit2 className="w-4 h-4"/>
+                              </button>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     );
