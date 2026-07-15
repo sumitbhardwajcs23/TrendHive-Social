@@ -1,5 +1,3 @@
-import { motion } from 'framer-motion';
-
 export function PageSkeleton() {
   return (
     <div className="w-full h-full min-h-[calc(100vh-4rem)] p-4 lg:p-8 flex flex-col gap-6 animate-pulse">

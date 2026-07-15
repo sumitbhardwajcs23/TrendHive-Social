@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { Plus, Search, ExternalLink, Save, X, Edit2, Link as LinkIcon, Trash2 } from 'lucide-react';
 import api from '../api/client';
 
